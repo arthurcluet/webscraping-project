@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.app {
+    width: 900px;
+    margin: auto;
+}
+
+.description {
+    padding: 10px 0;
+    border-bottom: 1px solid black;
+}
+
+
+#price-graph {
+    /* border: 1px solid black; */
+}
+
+@media screen and (max-width: 992px) {
+    body {
+        padding: 0 20px;
+    }
+
+    .app {
+        width: 100%;
+    }
+}

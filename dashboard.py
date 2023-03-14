@@ -5,26 +5,27 @@ from dash.dependencies import Input, Output
 
 app = Dash(__name__)
 
+
 def readData():
-    f = open("./data/bitcoin-history.txt","r")
+    f = open("./data/coinmarketcap_eth.txt","r")
     lines = f.readlines()
     def getDates(s):
         return s.split('|')[0].replace(',', '').replace('\n', '')
     def getVal(s):
-        return s.split('|')[1].replace(',', '').replace('\n', '')
+        return float(s.split('|')[1].replace(',', '').replace('\n', '').replace('$', ''))
     dataDates = list(map(getDates, lines))
     dataValues = list(map(getVal, lines))
-    return pd.DataFrame({'date':dataDates, 'BTC':dataValues})
+    return pd.DataFrame({'date':dataDates, 'ETH':dataValues})
 
-app.layout = html.Div(children=[
-    html.H1(children='Bitcoin Price'),
+app.layout = html.Div(className="app", children=[
+    html.H1(children='Ethereum Price'),
 
-    html.Div(children='''
+    html.Div(className="description", children='''
         Dash: A web application framework for your data.
     '''),
 
     dcc.Graph(
-        id='example-graph'
+        id='price-graph'
     ),
     dcc.Interval(
             id='interval-component',
@@ -33,13 +34,12 @@ app.layout = html.Div(children=[
         )
 ])
 
-@app.callback(Output('example-graph', 'figure'),
+@app.callback(Output('price-graph', 'figure'),
               Input('interval-component', 'n_intervals'))
 def update_graph(n):
     bitcoinDf = readData()
-    fig = px.line(bitcoinDf, x='date', y="BTC")
+    fig = px.line(bitcoinDf, x='date', y="ETH")
     return fig
-
 
 if __name__ == '__main__':
     app.run_server(debug=True, port=3000, host= '0.0.0.0')
