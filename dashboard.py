@@ -81,7 +81,8 @@ def update_graph(n, value, sma):
 
     if sma > 0:
         df['SMA'] = df[value].rolling(sma).mean()
-        df.dropna(inplace=True)
+        if sma == 1:
+            df.dropna(inplace=True)
         fig.add_scatter(x=df['date'], y=df['SMA'], mode='lines', name="SMA")
         if sma > 1:
             delta = 1
