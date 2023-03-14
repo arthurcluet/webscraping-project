@@ -5,9 +5,9 @@
 
 Command to add a cron job :
 ```bash
-  crontab -e
+crontab -e
 ```
 Running script every 2 mintutes :
-```bash
+```
 */2 * * * * $PATH_TO_PROJECT/scraper.js
 ```
