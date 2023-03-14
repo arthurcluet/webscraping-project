@@ -9,5 +9,5 @@ crontab -e
 ```
 Running script every 2 mintutes :
 ```
-*/2 * * * * $PATH_TO_PROJECT/scraper.js
+*/2 * * * * $PATH_TO_PROJECT/scraper.sh
 ```
