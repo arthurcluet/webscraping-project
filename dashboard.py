@@ -42,7 +42,7 @@ html.Div(children='Cryptocurrency:', className="label"),
        {'label': 'Ethereum (ETC)', 'value': 'ETH'},
        {'label': 'Cardano (ADA)', 'value': 'ADA'},
    ],
-   value='BTC', id='coin-dropdown'),
+   value='BTC', id='coin-dropdown', searchable=False),
 
 
 
