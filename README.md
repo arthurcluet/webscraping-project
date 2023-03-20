@@ -46,3 +46,5 @@ The dashboard part is still running in _debug mode_ but it can be started with:
 ```bash
 python3 dashboard.py
 ```
+
+_It currently starts under debug mode._
