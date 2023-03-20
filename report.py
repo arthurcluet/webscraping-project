@@ -33,12 +33,22 @@ now = datetime.now()
 
 def mapLast24H(x):
     dt = datetime.strptime(x['date'], '%Y-%m-%d %H:%M:%S')
-    if dt.date().day == now.date().day and dt.time().hour < 20:
-        return True
-    elif (dt + timedelta(days=1)).date().day == now.date().day and dt.time().hour >= 20:
-        return True    
+    # Si il est plus de 20H on prend les prix de la veille et du jour jusqu'à 20H
+    if now.time().hour >= 20:
+        if dt.date().day == now.date().day and dt.time().hour < 20:
+            return True
+        elif (dt + timedelta(days=1)).date().day == now.date().day and dt.time().hour >= 20:
+            return True    
+        else:
+            return False
+    # Sinon on prend les prix de l'avant veille dès 20h jusqu'à hier 20H
     else:
-        return False
+        if (dt + timedelta(days=1)).date().day == now.date().day and dt.time().hour < 20:
+            return True
+        elif (dt + timedelta(days=2)).date().day == now.date().day and dt.time().hour >= 20:
+            return True    
+        else:
+            return False
 
 report = {
     "date": now.strftime("%Y-%m-%d %H:%M:%S")
@@ -53,8 +63,14 @@ for k in files:
     #print("Vol:", df[k].std())
     #print("Min:", df[k].min())
     #print("Max:", df[k].max())
-    initial = df.iloc[0][k]
-    final = df.iloc[-1][k]
+    initial = {
+        "val": df.iloc[0][k],
+        "date": df.iloc[0]['date']
+    }
+    final = {
+        "val": df.iloc[-1][k],
+        "date": df.iloc[-1]['date']
+    }
     #print("Initial value:", initial)
     #print("Final value:", final)
     #print("Evolution", str(round(100*(final-initial)/initial, 2)) + "%")
@@ -65,7 +81,7 @@ for k in files:
         "max": df[k].max(),
         "open": initial,
         "close": final,
-        "evol": round(100*(final-initial)/initial, 4),
+        "evol": round(100*(final['val']-initial['val'])/initial['val'], 4),
     }
     
 reports.append(report)

@@ -5,6 +5,15 @@ from dash.dependencies import Input, Output
 import numpy as np
 import json
 
+
+external_scripts = [
+    {
+        'src': 'https://kit.fontawesome.com/fe63a2ff94.js',
+        'crossorigin': 'anonymous'
+    }
+]
+
+
 # Function that reads prices from the files
 # It removes any unwanted characters from strings such as "$24,393" and parses it as a float
 # Then if an error occured and a value can't be used, it just drops the line containing NA
@@ -26,7 +35,7 @@ def readPrices(coin):
     return df
 
 # Dashboard Layout
-app = Dash(__name__)
+app = Dash(__name__, external_scripts=external_scripts)
 app.title = "Crypto Prices"
 
 app.layout = html.Div(className="app", children=[
@@ -41,10 +50,10 @@ app.layout = html.Div(className="app", children=[
 
     dcc.Dropdown(options=[
        {'label': 'Bitcoin (BTC)', 'value': 'BTC'},
-       {'label': 'Ethereum (ETC)', 'value': 'ETH'},
+       {'label': 'Ethereum (ETH)', 'value': 'ETH'},
        {'label': 'Cardano (ADA)', 'value': 'ADA'},
    ],
-   value='BTC', id='coin-dropdown', searchable=False)]),
+   value='BTC', id='coin-dropdown', searchable=False, clearable=False)]),
         html.Div(className="col", children=[html.Div(children='SMA periods:', className="label"),
     html.Div(children=[
         html.Span('Increase SMA period below to display bollinger bands on the graph. Choose 0 to hide them.'),
@@ -52,7 +61,7 @@ app.layout = html.Div(className="app", children=[
         html.Span('Note: Lines can be hidden by clicking on the legend.')
     ], className='help'),
 
-   dcc.Slider(min=0, max=50, step=1, value=0, className="slider", id="sma-slider", marks={0: '0', 50:'50'})    ])
+   dcc.Slider(min=0, max=200, step=1, value=0, className="slider", id="sma-slider", marks={0: '0', 200:'200'})    ])
     ]),
 
     
@@ -74,18 +83,18 @@ app.layout = html.Div(className="app", children=[
                 html.Div(className="description", children=["Daily report, generated ", html.Span(id="reportDate", children="", className="bold"), " (24h period from 8pm to 8pm)"]),
 
                 html.Div(children=[
-                    html.Span('Since there is no opening and closing price for crypto-currencies, the daily report is generated with the price of the crypto-currencies over a 24 hour period since 8pm the previous day.')
+                    html.Span('Since there is no opening and closing price for crypto-currencies, the daily report is generated with the price of the crypto-currencies over a 24 hour period since 8pm the previous day. Reports can be generated manually by running a Python script and it will still use 8pm as open and close time.')
                 ], className='help'),
 
-                html.Table(children=[
-                    html.Tr(children=[html.Td(children="Currency"), html.Td(id="reportCurrency", children="")]),
-                    html.Tr(children=[html.Td(children="Evolution"), html.Td(id="reportEvolution", children="")]),
-                    html.Tr(children=[html.Td(children="Open price"), html.Td(id="reportOpen", children="")]),
-                    html.Tr(children=[html.Td(children="Close price"), html.Td(id="reportClose", children="")]),
-                    html.Tr(children=[html.Td(children="Volatility"), html.Td(id="reportVol", children="")]),
-                    html.Tr(children=[html.Td(children="Minimum"), html.Td(id="reportMin", children="")]),
-                    html.Tr(children=[html.Td(children="Maximum"), html.Td(id="reportMax", children="")]),
-                ])
+                html.Table(children=html.Tbody(children=[
+                    html.Tr(children=[html.Td(children=[html.I(className="fa-brands fa-bitcoin"), "Currency"]), html.Td(id="reportCurrency", children="")]),
+                    html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-chart-line"), "Evolution"]), html.Td(id="reportEvolution", children="")]),
+                    html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-backward-step"),"Open price"]), html.Td(id="reportOpen", children="")]),
+                    html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-forward-step"),"Close price"]), html.Td(id="reportClose", children="")]),
+                    html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-arrow-down-up-across-line"), "Volatility"]), html.Td(id="reportVol", children="")]),
+                    html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-down-long"), "Minimum"]), html.Td(id="reportMin", children="")]),
+                    html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-up-long"), "Maximum"]), html.Td(id="reportMax", children="")]),
+                ]))
 
         ])
     ])
@@ -142,7 +151,16 @@ def update_graph(n, value, sma):
     f = open('/home/arthur/webscraping-project/data/reports.json')
     report = json.load(f)[-1]
 
-    return fig, report['date'], value, str(report[value]['evol']) + "%", "$" + str(report[value]['open']), "$" + str(report[value]['close']), report[value]['std'], "$" + str(report[value]['min']), "$" + str(report[value]['max']), ("green" if report[value]["evol"] > 0 else "red")
+    reportDate = report['date']
+    reportEvolution = [html.I(className="fa-solid " + ("fa-caret-up" if report[value]['evol'] > 0 else "fa-caret-down")), html.Span(className="bold", children=(str(report[value]['evol']) + "%"))]
+    reportOpen = [html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['open']['val'])))) , (" ("+ report[value]['open']['date'] +")")]
+    reportClose = [html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['close']['val'])))) , (" ("+ report[value]['close']['date'] +")")]
+    reportVol = html.Span(className="bold", children=(report[value]['std']))
+    reportMin = html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['min']))))
+    reportMax = html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['max']))))
+    reportEvolColor = ("green" if report[value]["evol"] > 0 else "red")
+
+    return fig, reportDate, html.Span(className="bold", children=value), reportEvolution, reportOpen, reportClose, reportVol, reportMin, reportMax, reportEvolColor
 
 
 if __name__ == '__main__':

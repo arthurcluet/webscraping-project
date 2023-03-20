@@ -103,7 +103,16 @@ tr:nth-child(even) {
     color: #F44336;
 }
 
-td:nth-child(2),
+td:nth-child(2) {
+    width: 70%;
+
+}
+
 .bold {
     font-weight: 600;
+}
+
+i.fa-solid,
+i.fa-brands {
+    margin: 0 8px;
 }
