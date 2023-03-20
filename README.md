@@ -18,6 +18,11 @@ The second part of the project is to display the retrieved data on a web dashboa
 This part is done with the python script [dashboard.py](https://github.com/arthurcluet/webscraping-project/blob/master/dashboard.py).
 
 
+### Daily reports
+
+The third part of this project is to produce daily reports everyday at 8pm, which must include the open and closing price, the evolution of the price, as well as the volatility. Using CRONs, a Python script is executed at 8pm and generates that daily report with prices since 8pm the previous day (since there is no open or close price with cryptocurrencies).
+
+
 ## How it works
 
 ### Cron
