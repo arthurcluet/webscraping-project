@@ -27,13 +27,14 @@ The third part of this project is to produce daily reports everyday at 8pm, whic
 
 ### Cron
 
-I used cron jobs to have the scraping script retrieve the price of the cryptocurrencies every two minutes. The command to use is:
+I used cron jobs to have the scraping script retrieve the price of the cryptocurrencies every two minutes and create a report each day at 8pm. Command to use:
 ```bash
 crontab -e
 ```
-Line to add to the list of cron jobs:
+Lines to add to the list of cron jobs:
 ```
 */2 * * * * $PATH_TO_PROJECT/scraper.sh
+0 20 * * * python3 $PATH_TO_PROJECT/report.py
 ```
 
 ### Dashboard server start
