@@ -23,7 +23,7 @@ body {
 
 @media screen and (max-width: 992px) {
     body {
-        padding: 0 20px;
+        padding: 20px 10px;
     }
 
     .app {
@@ -115,4 +115,14 @@ td:nth-child(2) {
 i.fa-solid,
 i.fa-brands {
     margin: 0 8px;
+}
+
+.livePrice {
+    font-weight: 600;
+    font-size: 2rem;
+}
+
+.liveEvol {
+    font-size: 1.1rem;
+    font-weight: 600;
 }
