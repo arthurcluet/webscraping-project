@@ -94,15 +94,7 @@ app.layout = html.Div(className="app", children=[
             ], className='help'),
 
             # Tableau
-            html.Table(children=html.Tbody(children=[
-                html.Tr(children=[html.Td(children=[html.I(className="fa-brands fa-bitcoin"), "Currency"]), html.Td(id="reportCurrency", children="")]),
-                html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-chart-line"), "Evolution"]), html.Td(id="reportEvolution", children="")]),
-                html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-backward-step"),"Open price"]), html.Td(id="reportOpen", children="")]),
-                html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-forward-step"),"Close price"]), html.Td(id="reportClose", children="")]),
-                html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-arrow-down-up-across-line"), "Volatility"]), html.Td(id="reportVol", children="")]),
-                html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-down-long"), "Minimum"]), html.Td(id="reportMin", children="")]),
-                html.Tr(children=[html.Td(children=[html.I(className="fa-solid fa-up-long"), "Maximum"]), html.Td(id="reportMax", children="")]),
-            ]))
+            html.Table(id="reportTable",children=html.Tbody(children=[]))
         ])
     ])
 ])
@@ -111,22 +103,9 @@ app.layout = html.Div(className="app", children=[
 # Inputs : intervalle, slider, sélecteur de crypto
 # Outputs : graph, tableau, prix live, ...
 @app.callback(Output('price-graph', 'figure'),
-                Output('reportDate', 'children'),
-                Output('reportCurrency', 'children'),
-                Output('reportEvolution', 'children'),
-
-                Output('reportOpen', 'children'),
-                Output('reportClose', 'children'),
-
-                Output('reportVol', 'children'),
-
-                Output('reportMin', 'children'),
-                Output('reportMax', 'children'),
-
-                Output('reportEvolution', 'className'),
-
+                Output('reportTable', 'children'),
                 Output('current-price', 'children'),
-                
+                Output('reportDate', 'children'),
               Input('interval-component', 'n_intervals'),
               Input('coin-dropdown', 'value'),
               Input('sma-slider', 'value'))
@@ -167,7 +146,7 @@ def update_graph(n, value, sma):
     liveEvol = 100*(currentPrice - previousPrice)/previousPrice
 
     # Div pour la valeur live
-    currentPriceDivChildren =[ 
+    livePriceDiv =[ 
         html.Span("$" + str('{:,}'.format(currentPrice)), className="livePrice"),
         html.Span(className="liveEvol " + ("green" if liveEvol > 0 else "red" if liveEvol < 0 else ""), children=[
             html.I(className="fa-solid " + ("fa-caret-up" if liveEvol > 0 else "fa-caret-down" if liveEvol < 0 else "fa-minus")),
@@ -178,17 +157,46 @@ def update_graph(n, value, sma):
     # Lecture des rapports quotidiens
     f = open('/home/arthur/webscraping-project/data/reports.json')
     report = json.load(f)[-1]
+
+    # Lecture de la date
     reportDate = report['date']
-    reportEvolution = [html.I(className="fa-solid " + ("fa-caret-up" if report[value]['evol'] > 0 else "fa-caret-down")), html.Span(className="bold", children=(str(report[value]['evol']) + "%"))]
-    reportOpen = [html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['open']['val'])))) , (" ("+ report[value]['open']['date'] +")")]
-    reportClose = [html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['close']['val'])))) , (" ("+ report[value]['close']['date'] +")")]
-    reportVol = html.Span(className="bold", children=(report[value]['std']))
-    reportMin = html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['min']))))
-    reportMax = html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['max']))))
-    reportEvolColor = ("green" if report[value]["evol"] > 0 else "red")
+
+    # On met les données dans un tableau
+    # Je reconnais que c'est pas très lisible
+
+    # Chaque Tr contient 2 Td
+    # Le  1er Td contient - une balise "i" (icône FontAwesome) + la description de la ligne
+    # Le 2eme Td contient - la valeur du rapport dans un SPAN
+
+    # Je songe à mettre chaque valeur dans des variables pour simplifier un peu la lecture mais ça fonctionne très bien comme ça et VSCode met les paranthèses correspondantes de la même couleur
+    tableContent = [
+        html.Tr(children=[
+            html.Td(children=[html.I(className="fa-brands fa-bitcoin"), "Currency"]),
+            html.Td(id="reportCurrency", children=html.Span(className="bold", children=value))]),
+        html.Tr(children=[
+            html.Td(children=[html.I(className="fa-solid fa-chart-line"), "Evolution"]),
+            html.Td(id="reportEvolution", className=("green" if report[value]['evol'] > 0 else "red"), children=[
+                html.I(className="fa-solid " + ("fa-caret-up" if report[value]['evol'] > 0 else "fa-caret-down")),
+                html.Span(className="bold", children=(str(report[value]['evol']) + "%"))])]),
+        html.Tr(children=[
+            html.Td(children=[html.I(className="fa-solid fa-backward-step"),"Open price"]),
+            html.Td(id="reportOpen", children=[html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['open']['val'])))) , (" ("+ report[value]['open']['date'] +")")])]),
+        html.Tr(children=[
+            html.Td(children=[html.I(className="fa-solid fa-forward-step"),"Close price"]),
+            html.Td(id="reportClose", children=[html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['close']['val'])))) , (" ("+ report[value]['close']['date'] +")")])]),
+        html.Tr(children=[
+            html.Td(children=[html.I(className="fa-solid fa-arrow-down-up-across-line"), "Volatility"]),
+            html.Td(id="reportVol", children=html.Span(className="bold", children=(report[value]['std'])))]),
+        html.Tr(children=[
+            html.Td(children=[html.I(className="fa-solid fa-down-long"), "Minimum"]),
+            html.Td(id="reportMin", children=html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['min'])))))]),
+        html.Tr(children=[
+            html.Td(children=[html.I(className="fa-solid fa-up-long"), "Maximum"]),
+            html.Td(id="reportMax", children=html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['max'])))))]),
+    ]
 
     # Renvoi des valeurs modifiées
-    return fig, reportDate, html.Span(className="bold", children=value), reportEvolution, reportOpen, reportClose, reportVol, reportMin, reportMax, reportEvolColor, currentPriceDivChildren
+    return fig, tableContent, livePriceDiv, reportDate
 
 # Lancement du dashboard
 if __name__ == '__main__':
