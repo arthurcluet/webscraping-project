@@ -168,31 +168,57 @@ def update_graph(n, value, sma):
     # Le  1er Td contient - une balise "i" (icône FontAwesome) + la description de la ligne
     # Le 2eme Td contient - la valeur du rapport dans un SPAN
 
-    # Je songe à mettre chaque valeur dans des variables pour simplifier un peu la lecture mais ça fonctionne très bien comme ça et VSCode met les paranthèses correspondantes de la même couleur
+    # FontAwesome Icons
+    bitcoinIcon = html.I(className="fa-brands fa-bitcoin")
+    chartLineIcon = html.I(className="fa-solid fa-chart-line")
+    evolutionIcon = html.I(className="fa-solid " + ("fa-caret-up" if report[value]['evol'] > 0 else "fa-caret-down"))
+    backwardStepIcon = html.I(className="fa-solid fa-backward-step")
+    forwardStepIcon = html.I(className="fa-solid fa-forward-step")
+    volatilityIcon = html.I(className="fa-solid fa-arrow-down-up-across-line")
+    downIcon = html.I(className="fa-solid fa-down-long")
+    upIcon = html.I(className="fa-solid fa-up-long")
+
+    # Couleur pour l'évolution du prix
+    evolutionColor = "green" if report[value]['evol'] > 0 else "red"
+
+    # Raccourci pour crééer un span avec la classe "bold"
+    def boldSpan(content):
+        return html.Span(className="bold", children=content)
+
+    # Valeurs à afficher
+    openPrice = boldSpan("$" + str('{:,}'.format(report[value]['open']['val'])))
+    openPriceDate = (" ("+ report[value]['open']['date'] +")")
+    closePrice = boldSpan("$" + str('{:,}'.format(report[value]['close']['val'])))
+    closePriceDate = (" ("+ report[value]['close']['date'] +")")
+    minimumPrice = boldSpan("$" + str('{:,}'.format(report[value]['min'])))
+    maximumPrice = boldSpan("$" + str('{:,}'.format(report[value]['max'])))
+    
+    # Tableau
     tableContent = [
         html.Tr(children=[
-            html.Td(children=[html.I(className="fa-brands fa-bitcoin"), "Currency"]),
-            html.Td(id="reportCurrency", children=html.Span(className="bold", children=value))]),
+            html.Td(children=[bitcoinIcon, "Currency"]),
+            html.Td(id="reportCurrency", children=boldSpan(value))]),
         html.Tr(children=[
-            html.Td(children=[html.I(className="fa-solid fa-chart-line"), "Evolution"]),
-            html.Td(id="reportEvolution", className=("green" if report[value]['evol'] > 0 else "red"), children=[
-                html.I(className="fa-solid " + ("fa-caret-up" if report[value]['evol'] > 0 else "fa-caret-down")),
-                html.Span(className="bold", children=(str(report[value]['evol']) + "%"))])]),
+            html.Td(children=[chartLineIcon, "Evolution"]),
+            html.Td(id="reportEvolution", className=evolutionColor, children=[
+                evolutionIcon,
+                boldSpan((str(report[value]['evol']) + "%"))
+            ])]),
         html.Tr(children=[
-            html.Td(children=[html.I(className="fa-solid fa-backward-step"),"Open price"]),
-            html.Td(id="reportOpen", children=[html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['open']['val'])))) , (" ("+ report[value]['open']['date'] +")")])]),
+            html.Td(children=[backwardStepIcon,"Open price"]),
+            html.Td(id="reportOpen", children=[openPrice, openPriceDate])]),
         html.Tr(children=[
-            html.Td(children=[html.I(className="fa-solid fa-forward-step"),"Close price"]),
-            html.Td(id="reportClose", children=[html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['close']['val'])))) , (" ("+ report[value]['close']['date'] +")")])]),
+            html.Td(children=[forwardStepIcon,"Close price"]),
+            html.Td(id="reportClose", children=[closePrice, closePriceDate])]),
         html.Tr(children=[
-            html.Td(children=[html.I(className="fa-solid fa-arrow-down-up-across-line"), "Volatility"]),
-            html.Td(id="reportVol", children=html.Span(className="bold", children=(report[value]['std'])))]),
+            html.Td(children=[volatilityIcon, "Volatility"]),
+            html.Td(id="reportVol", children=boldSpan(report[value]['std']))]),
         html.Tr(children=[
-            html.Td(children=[html.I(className="fa-solid fa-down-long"), "Minimum"]),
-            html.Td(id="reportMin", children=html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['min'])))))]),
+            html.Td(children=[downIcon, "Minimum"]),
+            html.Td(id="reportMin", children=minimumPrice)]),
         html.Tr(children=[
-            html.Td(children=[html.I(className="fa-solid fa-up-long"), "Maximum"]),
-            html.Td(id="reportMax", children=html.Span(className="bold", children=("$" + str('{:,}'.format(report[value]['max'])))))]),
+            html.Td(children=[upIcon, "Maximum"]),
+            html.Td(id="reportMax", children=maximumPrice)]),
     ]
 
     # Renvoi des valeurs modifiées
