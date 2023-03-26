@@ -4,6 +4,7 @@ import pandas as pd
 from dash.dependencies import Input, Output
 import numpy as np
 import json
+import plotly.graph_objects as go
 
 # Import de Font Awesome pour les icônes
 external_scripts = [
@@ -33,6 +34,32 @@ def readPrices(coin):
     df = df.dropna()
     return df
 
+def candlestickData(coin):
+    import pandas as pd
+    cs_df = pd.read_csv(files[coin], sep=";", names=["date", 'price'])
+    cs_df['price'] = cs_df['price'].map(mapFunction)
+    cs_df = cs_df.dropna()
+
+    # Converti les dates
+    cs_df['cs_date'] = pd.to_datetime(cs_df['date'])
+    cs_df['cs_date_only'] = cs_df['cs_date'].dt.date
+    cs_results_df = pd.DataFrame(columns=['cs_date', 'cs_open_price', 'cs_close_price', 'cs_max_price', 'cs_min_price'])
+    for cs_date in cs_df['cs_date_only'].unique():
+        cs_current_date_df = cs_df[cs_df['cs_date_only'] == cs_date]
+        cs_open_price = cs_current_date_df['price'].iloc[0]
+        cs_close_price = cs_current_date_df[cs_df['cs_date_only'] == cs_date]['price'].iloc[-1]
+        cs_max_price = cs_current_date_df['price'].max()
+        cs_min_price = cs_current_date_df['price'].min()
+        cs_results_df = cs_results_df.append({
+            'cs_date': cs_date,
+            'cs_open_price': cs_open_price,
+            'cs_close_price': cs_close_price,
+            'cs_max_price': cs_max_price,
+            'cs_min_price': cs_min_price
+        }, ignore_index=True)
+    return cs_results_df
+
+
 ##### TABLEAU DE BORD #####
 app = Dash(__name__, external_scripts=external_scripts)
 app.title = "Crypto Prices"
@@ -61,19 +88,29 @@ app.layout = html.Div(className="app", children=[
         ]),
         # Colonne avec la possibilité d'ajouter une moyenne mobile
         html.Div(className="col", children=[
-            html.Div(children='SMA periods:', className="label"),
-            html.Div(children=[
-                html.Span('Increase SMA period below to display bollinger bands on the graph. Choose 0 to hide them.'),
-                html.Br(),
-                html.Span('Note: Lines can be hidden by clicking on the legend.')
-            ], className='help'),
-            dcc.Slider(min=0, max=200, step=1, value=0, className="slider", id="sma-slider", marks={0: '0', 200:'200'})
+            html.Div(children='Simple Moving Average (SMA) periods:', className="label"),
+            #html.Div(children=[
+                #html.Span('Increase SMA period below to display bollinger bands on the graph. Choose 0 to hide them.'),
+                #html.Br(),
+                #html.Span('Note: Lines can be hidden by clicking on the legend.')
+            #], className='help'),
+            dcc.Slider(min=0, max=200, step=1, value=0, className="slider", id="sma-slider", marks={0: '0', 200:'200'}, tooltip={"placement": "bottom", "always_visible": True}),
+            html.Div(children='Bollinger bands Δ (in formula μ ± Δ × σ):', className="label"),
+            dcc.Slider(min=0.4, max=5, step=0.01, value=1, className="slider", id="delta-slider", marks={0.4: '0.4', 5:'5'}, tooltip={"placement": "bottom", "always_visible": True})
         ])
     ]),
 
     # Graph
     dcc.Graph(
         id='price-graph'
+    ),
+
+    html.Div(className="description", children='''
+        Candlesticks showing open/close/max/min price of the selected cryptocurrency (made from 00:00 to 23:59 and not 8pm)
+    '''),
+
+    dcc.Graph(
+        id='candle-graph'
     ),
     # Intervalle pour rafraîchir le contenu automatiquement
     dcc.Interval(
@@ -106,11 +143,16 @@ app.layout = html.Div(className="app", children=[
                 Output('reportTable', 'children'),
                 Output('current-price', 'children'),
                 Output('reportDate', 'children'),
+                Output('candle-graph', 'figure'),
               Input('interval-component', 'n_intervals'),
               Input('coin-dropdown', 'value'),
-              Input('sma-slider', 'value'))
-def update_graph(n, value, sma):
+              Input('sma-slider', 'value'),
+              Input('delta-slider', 'value'))
+def update_graph(n, value, sma, delta):
     # Lecture des prix de la crypto choisie
+
+    #delta = 1
+
     df = readPrices(value)
     y = [value]
 
@@ -120,17 +162,27 @@ def update_graph(n, value, sma):
     # Ajout de la moyenne mobile (si voulue)
     if sma > 0:
         df['SMA'] = df[value].rolling(sma).mean()
-        if sma == 1:
-            df.dropna(inplace=True)
-        fig.add_scatter(x=df['date'], y=df['SMA'], mode='lines', name="SMA")
         if sma > 1:
-            delta = 1
             df['STD'] = df[value].rolling(sma).std()
             df['bb_low'] = df['SMA'] - delta * df['STD']
             df['bb_up'] = df['SMA'] + delta * df['STD']
-            fig.add_scatter(x=df['date'], y=df['bb_up'], mode='lines', name="Upper band")
-            fig.add_scatter(x=df['date'], y=df['bb_low'], mode='lines', name="Lower band")
 
+            fig.add_trace(go.Scatter(x=df['date'], y=df['bb_up'],
+                fill=None,
+                mode='lines',
+                line_color='lightgreen', name="Upper band"
+                ))
+            fig.add_trace(go.Scatter(
+                x=df['date'],
+                y=df['bb_low'],
+                fill='tonexty', # fill area between trace0 and trace1
+                mode='lines', line_color='lightgreen', name="Lower band"))
+
+            #fig.add_scatter(x=df['date'], y=df['bb_up'], mode='lines', name="Upper band")
+            #fig.add_scatter(x=df['date'], y=df['bb_low'], mode='lines', name="Lower band")
+        if sma == 1:
+            df.dropna(inplace=True)
+        fig.add_scatter(x=df['date'], y=df['SMA'], mode='lines', name="SMA", line_color="red")
     # Paramètres du graph
     fig.update_layout(legend=dict(
         orientation="h",
@@ -221,8 +273,16 @@ def update_graph(n, value, sma):
             html.Td(id="reportMax", children=maximumPrice)]),
     ]
 
+    candle = candlestickData(value)
+    figCandle = go.Figure(data=[go.Candlestick(x=candle['cs_date'],
+                open=candle['cs_open_price'],
+                high=candle['cs_max_price'],
+                low=candle['cs_min_price'],
+                close=candle['cs_close_price'])])
+    figCandle.update_layout(xaxis_rangeslider_visible=False)
+
     # Renvoi des valeurs modifiées
-    return fig, tableContent, livePriceDiv, reportDate
+    return fig, tableContent, livePriceDiv, reportDate, figCandle
 
 # Lancement du dashboard
 if __name__ == '__main__':
