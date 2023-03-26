@@ -3,6 +3,10 @@
 
 [Working demo](http://87.106.204.26:3000)
 
+## Features
+
+<img src="https://github.com/arthurcluet/webscraping-project/raw/master/demo.png" />
+
 ## About this project
 
 ### Web scraping
