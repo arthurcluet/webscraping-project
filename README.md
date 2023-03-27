@@ -1,7 +1,7 @@
 
 # Web Scraping with Git, Linux & Python
 
-[Working demo](http://87.106.204.26:3000)
+<a href="http://87.106.204.26:3000" target="_blank">Working demo</a>
 
 ## Features
 
