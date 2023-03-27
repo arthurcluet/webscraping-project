@@ -94,9 +94,9 @@ app.layout = html.Div(className="app", children=[
                 #html.Br(),
                 #html.Span('Note: Lines can be hidden by clicking on the legend.')
             #], className='help'),
-            dcc.Slider(min=0, max=200, step=1, value=0, className="slider", id="sma-slider", marks={0: '0', 200:'200'}, tooltip={"placement": "bottom", "always_visible": True}),
+            dcc.Slider(min=0, max=200, step=1, value=100, className="slider", id="sma-slider", marks={0: '0', 200:'200'}, tooltip={"placement": "bottom", "always_visible": True}),
             html.Div(children='Bollinger bands Δ (in formula μ ± Δ × σ):', className="label"),
-            dcc.Slider(min=0.4, max=5, step=0.01, value=1, className="slider", id="delta-slider", marks={0.4: '0.4', 5:'5'}, tooltip={"placement": "bottom", "always_visible": True})
+            dcc.Slider(min=0.4, max=5, step=0.01, value=2, className="slider", id="delta-slider", marks={0.4: '0.4', 5:'5'}, tooltip={"placement": "bottom", "always_visible": True})
         ])
     ]),
 
@@ -286,4 +286,4 @@ def update_graph(n, value, sma, delta):
 
 # Lancement du dashboard
 if __name__ == '__main__':
-    app.run_server(debug=True, port=3000, host= '0.0.0.0')
+    app.run_server(debug=False, port=3000, host= '0.0.0.0')
