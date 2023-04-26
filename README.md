@@ -2,6 +2,7 @@
 # Web Scraping with Git, Linux & Python
 
 <a href="https://crypto.arthurcluet.dev" target="_blank">Working demo</a>
+_Undergoing maintenance. Following attacks on the server, the site is temporarily unavailable._
 
 ## Features
 
