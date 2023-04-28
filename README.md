@@ -1,6 +1,10 @@
 
 # Web Scraping with Git, Linux & Python
 
+![Shell Script](https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Dash](https://img.shields.io/badge/dash-008DE4?style=for-the-badge&logo=dash&logoColor=white)
+
 <a href="https://crypto.arthurcluet.dev" target="_blank">Working demo</a>
 _Undergoing maintenance. Following attacks on the server, the site is temporarily unavailable._
 
